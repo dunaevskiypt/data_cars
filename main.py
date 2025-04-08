@@ -4,10 +4,9 @@ import re
 import json
 from time import sleep
 
-
 car_data = []
 
-for count in range(1, 2):
+for count in range(1, 6):
     sleep(0.7)
     url = f"https://auto.ria.com/uk/search/?lang_id=4&page={count}&countpage=100&category_id=1&custom=1&abroad=2"
 
@@ -20,14 +19,9 @@ for count in range(1, 2):
         car_cards = soup.find_all('section', class_='ticket-item')
 
         for card in car_cards:
-            # Link and ID
+            # Link
             ad_link = card.find('a', class_='address')
             link = ad_link.get('href') if ad_link else None
-
-            ad_id = None
-            if link:
-                match = re.search(r'_(\d+)\.html', link)
-                ad_id = match.group(1) if match else None
 
             # Car name and year
             car_name = ad_link.find('span').text.strip(
@@ -85,7 +79,7 @@ for count in range(1, 2):
             data_update = date_span.get(
                 'data-update-date') if date_span else None
 
-            # status check
+            # Status check
             sale_status = "sale"
             sold_date = None
             if footer:
@@ -94,9 +88,8 @@ for count in range(1, 2):
                     sale_status = "sold"
                     sold_date = sold_span.get('data-sold-date')
 
-            # add data in dictionary
+            # Add data in dictionary
             car_info = {
-                "id": ad_id,
                 "link": link,
                 "brand": car_name,
                 "year": year,
@@ -114,13 +107,13 @@ for count in range(1, 2):
                 "sold_date": sold_date
             }
 
-            # add data in list
+            # Add data in list
             car_data.append(car_info)
 
     except requests.exceptions.RequestException as e:
         print(f"Error fetching data from {url}: {e}")
 
-# save data in json
+# Save data in json
 with open('car_data.json', 'w', encoding='utf-8') as f:
     json.dump(car_data, f, ensure_ascii=False, indent=4)
 
