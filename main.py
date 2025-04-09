@@ -6,7 +6,7 @@ from time import sleep
 
 car_data = []
 
-for count in range(1, 6):
+for count in range(1, 3):
     sleep(0.7)
     url = f"https://auto.ria.com/uk/search/?lang_id=4&page={count}&countpage=100&category_id=1&custom=1&abroad=2"
 
@@ -58,9 +58,9 @@ for count in range(1, 6):
 
             # State number and VIN
             base_info = card.find('div', class_='base_information')
-
             state_number = None
             vin_code = None
+            accident_status = None
             if base_info:
                 state_span = base_info.find('span', class_='state-num')
                 if state_span:
@@ -70,6 +70,13 @@ for count in range(1, 6):
                 if vin_span:
                     vin_inner = vin_span.find_all('span')
                     vin_code = vin_inner[0].text.strip() if vin_inner else None
+
+                # Accident info
+                accident_span = base_info.find(
+                    'span', attrs={'data-state': 'state'})
+                if accident_span:
+                    state_text = accident_span.find('span', class_='state')
+                    accident_status = state_text.text.strip() if state_text else None
 
             # Dates
             footer = card.find('div', class_='footer_ticket')
@@ -88,6 +95,10 @@ for count in range(1, 6):
                     sale_status = "sold"
                     sold_date = sold_span.get('data-sold-date')
 
+            # Top promotion level
+            top_tag = card.find('a', class_='item small-promote-level')
+            top = top_tag.text.strip() if top_tag else None
+
             # Add data in dictionary
             car_info = {
                 "link": link,
@@ -104,7 +115,9 @@ for count in range(1, 6):
                 "date_added": data_add,
                 "date_updated": data_update,
                 "sale_status": sale_status,
-                "sold_date": sold_date
+                "sold_date": sold_date,
+                "top_level": top,
+                "accident_status": accident_status  # <-- добавленное поле
             }
 
             # Add data in list
